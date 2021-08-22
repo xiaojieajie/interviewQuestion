@@ -1,4 +1,7 @@
-const Vue = {
+import { effect } from './reactive.js'
+export * from './reactive.js'
+
+export const Vue = {
     createRenderer({ querySelector, insert }) {
         return {
             createApp(options) {
@@ -33,12 +36,17 @@ const Vue = {
                         if (!options.render) {
                             options.render = this.compile(parent.innerHTML)
                         }
-                        const el = options.render.call(this.proxy)
 
-                        // 3. 追加
-                        parent.innerHTML = ''
+                        this.update = effect(() => {
+                            const el = options.render.call(this.proxy)
+                            // 3. 追加
+                            parent.innerHTML = ''
+                            insert(el, parent)
+                        })
 
-                        insert(el, parent)
+                        // 初始化时执行一次
+                        // this.update()
+                        
                     },
                     compile(template) {
                         // template => ast => render
